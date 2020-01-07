@@ -1,0 +1,7 @@
+scaliæ funkcje uart_readln
+uart_readln opcja tylko false?? (sprawdzanie while uart pending) ABO TYLKO TRUE I UART PENDING ZEBY NIE ZABLOCZYC
+timeouty w handlerze errorow wlanu ?? timeouty watchdogi zliczajace czas w ISR, ustawiajace odpowiednie flagi
+posprzatac syf w mainie
+funkcje WLAN powinny zwracac errorcheckera a nie miec takie bloki (dlaczego to nie dziala?)
+WLAN_Listen -> rozlaczenie TCP
+sprawdzic gdzie da sie zaoszczedzic kilka bajtow
