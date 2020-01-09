@@ -2,20 +2,14 @@
 #include "buttons.h"
 #include "lcd.h"
 #include "memory/kblayout.h"
-
-void LCD_AutoDrawSprite_P(int8_t PosX, int8_t PosY, const uint8_t* Buffer, int8_t Width, int8_t Height)
-{
-	LCD_DrawSprite_P(PosX, PosY, Buffer, Width, Height);
-	LCD_Render();
-}
+#include "string.h"
 
 uint8_t Interface_Keyboard_P(char* Buffer, uint8_t Max, const char* Title)
 {
 	Max--;
 	int8_t x = 0, y = 1;
 	uint8_t Shift = 0;
-	uint8_t Length = 0;
-	Buffer[0] = '\0';
+	uint8_t Length = strlen(Buffer);
 	while(!Button_Return_Pressed())
 	{
 		LCD_Clear();
@@ -114,34 +108,31 @@ void Interface_Menu_P(const TMenu* Menu)
 			LCD_InvertCell(i, (Selection-View)+2);
 		LCD_Render();
 		
-		while(1)
-		{
-			if(Button_Up_Pressed())
-				if(Selection > 0)
-				{
-					Selection--;
-					break; // or inputLoop = false;
-				}
-			if(Button_Down_Pressed())
-				if(Selection < NumEntries-1)
-				{
-					Selection++;
-					break; // inputLoop = false;
-				}
-			if(Button_OK_Pressed())
+		if(Button_Up_Pressed())
+			if(Selection > 0)
 			{
-				//const TFunction* Callback = (const TFunction*)pgm_read_ptr(&getMenuEntry(Menu, Selection)->Param );
-				if(pgm_read_ptr(&getMenuEntry(Menu, Selection)->Param) != 0 && (uint8_t)pgm_read_byte(&getMenuEntry(Menu, Selection)->Flags)==(MENU_ENTRY_FUNCTION|MENU_ENTRY_PROGMEM))
-				{
-					//Callback->Function();
-					void (*Function)() = pgm_read_ptr(&((const TFunction*)pgm_read_ptr(&getMenuEntry(Menu, Selection)->Param))->Function);
-					Function();
-				}
-				break;
+				Selection--;
+				//break; // or inputLoop = false;
 			}
-			//if(Button_Return_Pressed())
-			//	return;
+		if(Button_Down_Pressed())
+			if(Selection < NumEntries-1)
+			{
+				Selection++;
+				//break; // inputLoop = false;
+			}
+		if(Button_OK_Pressed())
+		{
+			//const TFunction* Callback = (const TFunction*)pgm_read_ptr(&getMenuEntry(Menu, Selection)->Param );
+			if(pgm_read_ptr(&getMenuEntry(Menu, Selection)->Param) != 0 && (uint8_t)pgm_read_byte(&getMenuEntry(Menu, Selection)->Flags)==(MENU_ENTRY_FUNCTION|MENU_ENTRY_PROGMEM))
+			{
+				//Callback->Function();
+				void (*Function)() = pgm_read_ptr(&((const TFunction*)pgm_read_ptr(&getMenuEntry(Menu, Selection)->Param))->Function);
+				Function();
+			}
+			//break;
 		}
+		if(Button_Return_Pressed())
+			return;
 		
 		if(View+3 < Selection) // follow the lower selection
 			View++;
@@ -152,7 +143,7 @@ void Interface_Menu_P(const TMenu* Menu)
 	}
 }
 
-void Interface_Scrollbar_P(const char* Name, int8_t* Value, int8_t Bottom, int8_t Top, int8_t Step)
+void Interface_Scrollbar_P(const char* Name, uint8_t* Value, uint8_t Bottom, uint8_t Top, uint8_t Step, void (*update)(uint8_t))
 {
 	int8_t Prev = *Value;
 	while(1)
@@ -175,58 +166,42 @@ void Interface_Scrollbar_P(const char* Name, int8_t* Value, int8_t Bottom, int8_
 		//LCD_DrawText() // display current value
 		LCD_Render();
 		
-		while(1)
+		if(Button_Return_Pressed())
 		{
-			if(Button_Return_Pressed())
-			{
-				*Value = Prev;
-				return;	
-			}
-			if(Button_OK_Pressed())
-				return;
-			if(Button_Left_Pressed())
-			{
-				*Value-=Step;
-				break;
-			}
-			if(Button_Right_Pressed())
-			{
-				*Value+=Step;
-				break;
-			}
+			*Value = Prev;
+			update(*Value);
+			return;	
+		}
+		if(Button_OK_Pressed())
+			return;
+		if(Button_Left_Pressed())
+		{
+			*Value-=Step;
+			update(*Value);
+		}
+		if(Button_Right_Pressed())
+		{
+			*Value+=Step;
+			update(*Value);
 		}
 	}
 }
 
-void Interface_Switch_P(const char* Switches, uint8_t* Selection) // maybe return int instead of using this pointer
+void Interface_Switch_P(const char* Switches, uint8_t* Selection, const char* Title) // maybe return int instead of using this pointer
 {
-	const char* chStart = Switches;
 	uint8_t NumSwitches = 1;
 	uint8_t Prev = *Selection;
-	while(*chStart)
+	char Buffer[64] = { 0 };
+	strcpy_P(Buffer, Switches);
+	char* Tokens[8];
+	Tokens[0] = strtok(Buffer, "\r");
+	while (NumSwitches < 8 && (Tokens[NumSwitches] = strtok(0, "\r")))
+		NumSwitches++;
+	while (1)
 	{
-		if(*chStart == '\r')
-		{
-			NumSwitches++;
-		}
-	}
-	chStart = 0;
-	while(1)
-	{
-		if(!chStart)
-		{
-			chStart = Switches;
-			for(uint8_t i = 0; i!=*Selection; chStart++)
-			{
-				if(*chStart == '\r')
-					i++;
-				if(!*chStart)
-					return; // bad selection
-			}
-		}
 		LCD_Clear();
-		LCD_DrawText_P(6, 3, chStart);
-		//...
+		LCD_DrawText(6, 3, Tokens[*Selection]);
+		LCD_DrawText_P(1, 1, Title);
 		LCD_Render();
 		if(Button_Return_Pressed())
 		{
@@ -239,18 +214,12 @@ void Interface_Switch_P(const char* Switches, uint8_t* Selection) // maybe retur
 		{
 			if(*Selection > 0)
 			{
-				chStart = 0;
 				(*Selection)--;
 			}
 		}
 		if(Button_Right_Pressed())
-		{
 			if(*Selection < NumSwitches-1)
-			{
-				chStart = 0;
 				(*Selection)++;
-			}
-		}
 	}
 	
 }

@@ -43,7 +43,6 @@ C_SRCS +=  \
 ../lcd.c \
 ../main.c \
 ../uart.c \
-../ui.c \
 ../wlan.c
 
 
@@ -60,7 +59,6 @@ interface.o \
 lcd.o \
 main.o \
 uart.o \
-ui.o \
 wlan.o
 
 OBJS_AS_ARGS +=  \
@@ -70,7 +68,6 @@ interface.o \
 lcd.o \
 main.o \
 uart.o \
-ui.o \
 wlan.o
 
 C_DEPS +=  \
@@ -80,7 +77,6 @@ interface.d \
 lcd.d \
 main.d \
 uart.d \
-ui.d \
 wlan.d
 
 C_DEPS_AS_ARGS +=  \
@@ -90,7 +86,6 @@ interface.d \
 lcd.d \
 main.d \
 uart.d \
-ui.d \
 wlan.d
 
 OUTPUT_FILE_PATH +=sensor.elf
@@ -143,13 +138,6 @@ LINKER_SCRIPT_DEP+=
 	
 
 ./uart.o: .././uart.c
-	@echo Building file: $<
-	@echo Invoking: AVR/GNU C Compiler : 5.4.0
-	$(QUOTE)D:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DNDEBUG -DF_CPU=16000000  -I"D:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\include"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall -mmcu=atmega328p -B "D:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\gcc\dev\atmega328p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
-	@echo Finished building: $<
-	
-
-./ui.o: .././ui.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)D:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DNDEBUG -DF_CPU=16000000  -I"D:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\include"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall -mmcu=atmega328p -B "D:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\gcc\dev\atmega328p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

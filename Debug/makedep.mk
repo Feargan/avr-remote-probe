@@ -14,7 +14,5 @@ main.c
 
 uart.c
 
-ui.c
-
 wlan.c
 

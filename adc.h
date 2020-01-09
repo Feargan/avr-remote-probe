@@ -6,6 +6,7 @@
 void ADC_Init(); // options
 uint16_t ADC_Read(uint8_t Port);
 float ADC_LinearV2U(uint16_t adc, int16_t Resolution, float Ref,  float UnitsPerV, float ZeroVoltage); // inline??
+uint16_t ADC_Oversample(uint8_t Port, uint8_t Bits);
 //float ADC_ExponentialV2u(uint16_t adc);
 
 #endif /* ADC_H_ */

@@ -13,18 +13,27 @@
 
 //#include "lcd.h"
 
+uint8_t WLAN_States = 0;
+
+uint8_t WLAN_GetState()
+{
+	return WLAN_States;
+}
+
 static int8_t WLAN_CheckErrors()
 {
 	char Buffer[20];
 	while(true)
 	{
-		int Bytes = UART_ReadLn(Buffer, sizeof(Buffer), true); // don't wait for lf, but delay for a brief moment if there is no pending character, if timeout and uart still empty - return
-		// true - must end with lf, no delays (?) , false - lf not necessary, if there's no pending character - wait, if after delay (usecs/frame) there's no data - return
+		int Bytes = UART_ReadLn(Buffer, sizeof(Buffer), true);
 		if(!Bytes)
 			continue;
-		if(Bytes == -1)
+		else if(Bytes == -1)
+		{
+			WLAN_States &= ~(1 << WLAN_CHIP_OK);
 			return WLAN_ERROR_UART_TIMEOUT;
-		if(!strcmp_P(Buffer, PSTR("OK")))
+		}
+		else if(!strcmp_P(Buffer, PSTR("OK")))
 			return WLAN_OK;
 		else if(!strcmp_P(Buffer, PSTR("SEND OK")))
 			return WLAN_OK;
@@ -39,11 +48,11 @@ static int8_t WLAN_CheckErrors()
 uint8_t WLAN_Init()
 {
 	char Buffer[16];
-	
-	WLAN_RESET_DDR |= (1 << WLAN_RESET);
-	WLAN_RESET_PORT &= ~(1 << WLAN_RESET);
+	WLAN_States &= ~(1 << WLAN_CHIP_OK);
+	//WLAN_RESET_DDR |= (1 << WLAN_RESET);
+	//WLAN_RESET_PORT &= ~(1 << WLAN_RESET);
 	_delay_ms(50);
-	WLAN_RESET_PORT |= (1 << WLAN_RESET);
+	//WLAN_RESET_PORT |= (1 << WLAN_RESET);
     _delay_ms(1000);
 	
 	UART_Init(9600);
@@ -55,7 +64,10 @@ uint8_t WLAN_Init()
 	{
 		UART_ReadLn(Buffer, sizeof(Buffer), false);
 		if(!strcmp_P(Buffer, PSTR("OK")))
+		{
+			WLAN_States |= (1 << WLAN_CHIP_OK);
 			return WLAN_OK;
+		}
 	}
     return WLAN_INIT_ERROR_CORRUPTED_ANSWER;
 }
@@ -73,6 +85,11 @@ int8_t WLAN_ListAccessPoints()
 
         if(!Bytes)
             continue;
+		else if(Bytes == -1)
+		{
+			WLAN_States &= ~(1 << WLAN_CHIP_OK);
+			return WLAN_ERROR_UART_TIMEOUT;
+		}
         else if(!strcmp_P(Buffer, PSTR("OK")))
             break;
         else if(!strcmp_P(Buffer, PSTR("ERROR")))
@@ -115,6 +132,7 @@ int8_t WLAN_ListAccessPoints()
 int8_t WLAN_JoinAccessPoint(const char* SSID, const char* Password)
 {
     char Buffer[16];
+	WLAN_States &= ~(1 << WLAN_AP_CONNECTED);
     UART_Puts_P(PSTR("AT+CWJAP=\""));
     UART_Puts(SSID);
     UART_Puts_P(PSTR("\",\""));
@@ -127,18 +145,23 @@ int8_t WLAN_JoinAccessPoint(const char* SSID, const char* Password)
         if(!Bytes)
             continue;
         else if(!strcmp_P(Buffer, PSTR("OK")))
+		{
+			WLAN_States |= (1 << WLAN_AP_CONNECTED);
             return WLAN_OK;
+		}
         else if(!strcmp_P(Buffer, PSTR("FAIL")))
             break;
         else if(!strcmp_P(Buffer, PSTR("ERROR")))
             break;
     }
     return WLAN_ERROR;
+	//return WLAN_CheckErrors();
 }
 
 int8_t WLAN_TcpConnect(const char* IP_Address, uint16_t Port)
 {
     char Buffer[16];
+	WLAN_States &= ~(1 << WLAN_TCP_CONNECTED);
     UART_Puts_P(PSTR("AT+CIPSTART=\"TCP\",\""));
     UART_Puts(IP_Address);
     itoa(Port, Buffer, 10);
@@ -152,13 +175,17 @@ int8_t WLAN_TcpConnect(const char* IP_Address, uint16_t Port)
         if(!Bytes)
             continue;
         else if(!strcmp_P(Buffer, PSTR("OK")))
+		{
+			WLAN_States |= (1 << WLAN_TCP_CONNECTED);
             return WLAN_OK;
+		}
         else if(!strcmp_P(Buffer, PSTR("FAIL")))
             break;
         else if(!strcmp_P(Buffer, PSTR("ERROR")))
             break;
     }
     return WLAN_ERROR;
+	//return WLAN_CheckErrors();
 }
 
 int8_t WLAN_TcpSend_P(const char* Message)
@@ -185,6 +212,7 @@ int8_t WLAN_TcpSend_P(const char* Message)
             break;
     }
     return WLAN_ERROR;
+	//return WLAN_CheckErrors();
 }
 
 int8_t WLAN_TcpSend(const char* Message)
@@ -212,7 +240,31 @@ int8_t WLAN_TcpSend(const char* Message)
         else if(!strcmp_P(Buffer, PSTR("ERROR")))
             break;
     }
-    return WLAN_ERROR; //WLAN_CheckErrors();
+    return WLAN_ERROR; //WLAN_CheckErrors();*/
+	//return WLAN_CheckErrors();
+}
+
+int8_t WLAN_Disconnect()
+{
+	char Buffer[16];
+	UART_Puts_P(PSTR("AT+CWQAP"));
+	while(true)
+	{
+		int Bytes = UART_ReadLn(Buffer, 16, true);
+
+		if(!Bytes)
+		continue;
+		else if(Bytes == -1)
+			return WLAN_ERROR_UART_TIMEOUT;
+		else if(!strcmp_P(Buffer, PSTR("OK")))
+			return WLAN_OK;
+		else if(!strcmp_P(Buffer, PSTR("FAIL")))
+			break;
+		else if(!strcmp_P(Buffer, PSTR("ERROR")))
+			break;
+	}
+	return WLAN_ERROR; //WLAN_CheckErrors();*/
+	//return WLAN_CheckErrors();
 }
 
 int8_t WLAN_Listen(RecvCallback onRecv)
@@ -225,7 +277,10 @@ int8_t WLAN_Listen(RecvCallback onRecv)
 		if(!Bytes)
 			continue;
 		else if(Bytes == -1)
+		{
+			WLAN_States &= ~(1 << WLAN_CHIP_OK);
 			return WLAN_ERROR_UART_TIMEOUT;
+		}
 		else if(!strncmp_P(Buffer, PSTR("+IPD,"), 5))
 		{
 			//WLAN_TcpSend(Buffer);
@@ -240,13 +295,11 @@ int8_t WLAN_Listen(RecvCallback onRecv)
 		}
 		else if(!strcmp_P(Buffer, PSTR("WIFI DISCONNECT"))) // \r must be taken into account in spite of the UART_ReadUntil_P() implementation?
 		{
-			// event callback
-			// ^- debil, just switch a boolean -> connection state will be returned by a function
+			WLAN_States &= ~(1 << WLAN_AP_CONNECTED);
 		}
-		else
+		else if(!strcmp_P(Buffer, PSTR("CLOSED")))
 		{
-			//WLAN_TcpSend_P(PSTR("DATA 10"));
-			//WLAN_TcpSend(Buffer);
+			WLAN_States &= ~(1 << WLAN_TCP_CONNECTED);
 		}
 	}
 	return WLAN_OK;

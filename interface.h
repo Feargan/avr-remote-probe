@@ -40,11 +40,9 @@ typedef struct TMenu
 	const char* Title;
 } TMenu;
 
-void LCD_AutoDrawSprite_P(int8_t PosX, int8_t PosY, const uint8_t* Buffer, int8_t Width, int8_t Height);
-
 void Interface_Menu_P(const TMenu* Menu);
 uint8_t Interface_Keyboard_P(char* Buffer, uint8_t Max, const char* Title);
-void Interface_Scrollbar_P(const char* Name, int8_t* Value, int8_t Bottom, int8_t Top, int8_t Step);
-void Interface_Switch_P(const char* Switches, uint8_t* Selection);
+void Interface_Scrollbar_P(const char* Name, uint8_t* Value, uint8_t Bottom, uint8_t Top, uint8_t Step, void (*update)(uint8_t));
+void Interface_Switch_P(const char* Switches, uint8_t* Selection, const char* Title);
 
 #endif

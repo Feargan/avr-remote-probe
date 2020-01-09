@@ -4,6 +4,8 @@
 #define SHIFTMODE_ON 0x1
 #define SHIFTMODE_ONCE 0x2
 
+#include <avr/pgmspace.h>
+
 const char KbLayout[4][14] PROGMEM =
 {
     { "`1234567890-=\x01"       },
