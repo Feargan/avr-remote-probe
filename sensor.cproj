@@ -181,6 +181,12 @@
     <Compile Include="sprites.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="tinyexpr.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="tinyexpr.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="uart.c">
       <SubType>compile</SubType>
     </Compile>

@@ -9,7 +9,7 @@ const char KbLayout[4][14] PROGMEM =
     { "`1234567890-=\x01"       },
     { " qwertyuiop[]\x04"       },
     { "\x02 asdfghjkl;'\\"      },
-    { "\x03 zxcvbnm,./ \x05"    },
+    { "\x03 zxcvbnm,./\x05\x06"    },
 };
 
 const char KbLayoutShift[4][14] PROGMEM =
@@ -17,7 +17,7 @@ const char KbLayoutShift[4][14] PROGMEM =
     { "~!@#$%^&*()_+\x01"       },
     { " QWERTYUIOP{}\x04"       },
     { "\x02 ASDFGHJKL:\"|"      },
-    { "\x03 ZXCVBNM<>? \x05"    },
+    { "\x03 ZXCVBNM<>?\x05\x06"    },
 };
 
 #endif // KBLAYOUT_H_INCLUDED

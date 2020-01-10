@@ -39,6 +39,7 @@ int8_t WLAN_TcpConnect(const char* IP_Address, uint16_t Port);
 int8_t WLAN_TcpSend(const char* Message);
 int8_t WLAN_TcpSend_P(const char* Message);
 int8_t WLAN_Disconnect();
+int8_t WLAN_TcpDisconnect();
 //void WLAN_SetRecvListener(RecvCallback Recv);
 //void WLAN_SetEventListener(void (*OnEventFn)(uint8_t)));
 int8_t WLAN_Listen(RecvCallback OnRecv); // expand to: return type -> int - indicating possible errors, so that it can be used simultaneously as error checker and packet receiver, extended: max timeout

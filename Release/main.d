@@ -21,9 +21,7 @@ main.d main.o: .././main.c \
  d:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\stdlib.h \
  .././lcd.h .././adc.h .././wlan.h .././ui_main_menu.h .././interface.h \
  .././ui_broker.h .././buttons.h .././boolean.h .././eecfg.h \
- .././sprites.h .././ui_sensors.h .././expr.h \
- d:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\ctype.h \
- d:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\5.4.0\include-fixed\limits.h \
+ .././sprites.h .././ui_sensors.h .././tinyexpr.h \
  d:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\string.h
 
 d:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\io.h:
@@ -88,10 +86,6 @@ d:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\
 
 .././ui_sensors.h:
 
-.././expr.h:
-
-d:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\ctype.h:
-
-d:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\lib\gcc\avr\5.4.0\include-fixed\limits.h:
+.././tinyexpr.h:
 
 d:\program\ files\ (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\string.h:

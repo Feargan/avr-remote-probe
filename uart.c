@@ -86,7 +86,7 @@ void UART_Puts(const char* String)
 		UART_Putc(Chr);
 }
 
-int UART_ReadUntil_P(char* Buffer, uint8_t Max, bool WaitForData, const char* Delimiters) // scale with ReadLn...?
+/*int UART_ReadUntil_P(char* Buffer, uint8_t Max, bool WaitForData, const char* Delimiters) // scale with ReadLn...?
 {
 	if(!Max)
 		return 0;
@@ -185,6 +185,65 @@ int UART_ReadLn(char* Buffer, uint8_t Max, bool WaitForData)
 		}
 		Buffer[n] = Chr;
 		Chr = UART_Getc();
+		n++;
+	}
+	Buffer[n] = '\0';
+	return n;
+	//return UART_ReadUntil_P(Buffer, Max, WaitForData, PSTR("\r\n"));
+}*/
+
+int UART_ReadUntil_P(char* Buffer, uint8_t Max, bool WaitForData, const char* Delimiters) // scale with ReadLn...?
+{
+	if(!Max)
+	return 0;
+	uint8_t n = 0;
+	uint16_t Chr;
+	const uint8_t nDelims = strlen_P(Delimiters);
+	
+	while(n<Max-1 && (Chr = UART_Getc()) != UART_OVERFLOW)
+	{
+		if(Chr == UART_NONE && !WaitForData) // ATTENTION HERE: Might lock the uC if transmission errors occur!!
+			break;
+		while(Chr == UART_NONE && WaitForData)
+		{
+			Chr = UART_Getc();
+		}
+		for(uint8_t i = 0; i<nDelims; i++)
+		{
+			char DelimChr = pgm_read_byte(&Delimiters[i]);
+			if(Chr == DelimChr)
+			{
+				Buffer[n] = '\0';
+				return n;
+			}
+		}
+		Buffer[n] = Chr;
+		n++;
+	}
+	Buffer[n] = '\0';
+	return n;
+}
+
+int UART_ReadLn(char* Buffer, uint8_t Max, bool WaitForData)
+{
+	if (!Max)
+	return 0;
+	uint8_t n = 0;
+	uint16_t Chr;
+	while(n<Max-1 && (Chr = UART_Getc()) != UART_OVERFLOW)
+	{
+		if (Chr == UART_NONE && !WaitForData) // ATTENTION HERE: Might lock the uC if transmission errors occur!! (update: fixed, watch out here and below)
+			break;
+		while (Chr == UART_NONE && WaitForData)
+		{
+			Chr = UART_Getc();
+		}
+		if (Chr == '\n')
+		{
+			n--; // cr lf
+			break;
+		}
+		Buffer[n] = Chr;
 		n++;
 	}
 	Buffer[n] = '\0';

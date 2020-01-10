@@ -52,7 +52,7 @@ uint8_t Interface_Keyboard_P(char* Buffer, uint8_t Max, const char* Title)
 				Buffer[Length+1] = '\0';
 				Length++;
 				if(Shift&SHIFTMODE_ONCE)
-				Shift = 0;
+					Shift = 0;
 			}
 			else
 			{
@@ -79,6 +79,10 @@ uint8_t Interface_Keyboard_P(char* Buffer, uint8_t Max, const char* Title)
 						break;
 					case 0x4:
 						return Length;
+						break;
+					case 0x5:
+						break;
+					case 0x6:
 						break;
 				}
 			}

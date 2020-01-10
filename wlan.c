@@ -247,7 +247,37 @@ int8_t WLAN_TcpSend(const char* Message)
 int8_t WLAN_Disconnect()
 {
 	char Buffer[16];
-	UART_Puts_P(PSTR("AT+CWQAP"));
+	UART_Puts_P(PSTR("AT+CWQAP\r\n"));
+	WLAN_States &= ~(1 << WLAN_AP_CONNECTED);
+	WLAN_States &= ~(1 << WLAN_TCP_CONNECTED);
+	while(true)
+	{
+		int Bytes = UART_ReadLn(Buffer, 16, true);
+
+		if(!Bytes)
+			continue;
+		else if(Bytes == -1)
+			return WLAN_ERROR_UART_TIMEOUT;
+		else if(!strcmp_P(Buffer, PSTR("OK")))
+			return WLAN_OK;
+		else if(!strcmp_P(Buffer, PSTR("WIFI DISCONNECT")))
+			return WLAN_OK;
+		else if(!strcmp_P(Buffer, PSTR("NOT CONNECTED")))
+			return WLAN_OK;
+		else if(!strcmp_P(Buffer, PSTR("FAIL")))
+			break;
+		else if(!strcmp_P(Buffer, PSTR("ERROR")))
+			break;
+	}
+	return WLAN_ERROR; //WLAN_CheckErrors();*/
+	//return WLAN_CheckErrors();
+}
+
+int8_t WLAN_TcpDisconnect()
+{
+	char Buffer[16];
+	UART_Puts_P(PSTR("AT+CIPCLOSE\r\n"));
+	WLAN_States &= ~(1 << WLAN_TCP_CONNECTED);
 	while(true)
 	{
 		int Bytes = UART_ReadLn(Buffer, 16, true);
@@ -258,6 +288,10 @@ int8_t WLAN_Disconnect()
 			return WLAN_ERROR_UART_TIMEOUT;
 		else if(!strcmp_P(Buffer, PSTR("OK")))
 			return WLAN_OK;
+		else if(!strcmp_P(Buffer, PSTR("WIFI DISCONNECT")))
+			return WLAN_OK;
+		else if(!strcmp_P(Buffer, PSTR("NOT CONNECTED")))
+			return WLAN_OK;
 		else if(!strcmp_P(Buffer, PSTR("FAIL")))
 			break;
 		else if(!strcmp_P(Buffer, PSTR("ERROR")))
@@ -265,7 +299,7 @@ int8_t WLAN_Disconnect()
 	}
 	return WLAN_ERROR; //WLAN_CheckErrors();*/
 	//return WLAN_CheckErrors();
-}
+	}
 
 int8_t WLAN_Listen(RecvCallback onRecv)
 {
@@ -296,6 +330,7 @@ int8_t WLAN_Listen(RecvCallback onRecv)
 		else if(!strcmp_P(Buffer, PSTR("WIFI DISCONNECT"))) // \r must be taken into account in spite of the UART_ReadUntil_P() implementation?
 		{
 			WLAN_States &= ~(1 << WLAN_AP_CONNECTED);
+			WLAN_States &= ~(1 << WLAN_TCP_CONNECTED);
 		}
 		else if(!strcmp_P(Buffer, PSTR("CLOSED")))
 		{

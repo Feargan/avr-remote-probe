@@ -12,6 +12,8 @@ lcd.c
 
 main.c
 
+tinyexpr.c
+
 uart.c
 
 wlan.c

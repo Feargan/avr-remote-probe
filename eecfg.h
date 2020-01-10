@@ -14,11 +14,10 @@ uint8_t EEMEM  CfgBacklight  = 0;
 char EEMEM CfgSSID[64] = { "ASUS-4F94" };
 char EEMEM CfgPassword[64]  = { "KKKKKKKK" };
 char EEMEM CfgBrokerAddr[64] = { "192.168.1.16" };
+char EEMEM CfgSystemName[16] = { "UPROBE" };
 uint16_t EEMEM CfgBrokerPort = 7750;
-char EEMEM CfgName1[8] = { 0 };
-char EEMEM CfgName2[8] = { 0 };
-char EEMEM CfgExpr1[128] = { 0 };
-char EEMEM CfgExpr2[128] = { 0 };
+char EEMEM CfgSensorNames[4][8] = { "SENSOR1", "SENSOR2", "TRIG1", "TRIG2" };
+char EEMEM CfgExprs[4][64] = { {0}, {0}, {0}, {0} };
 	
 #define CFG_INPUT1_ENABLED 0
 #define CFG_INPUT2_ENABLED 1

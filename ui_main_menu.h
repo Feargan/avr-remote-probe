@@ -23,22 +23,6 @@ const struct TMenuEntry Menu_Main_Network PROGMEM =
 
 //
 
-const char Menu_Main_Triggers_Text[] PROGMEM = "Triggers";
-
-const struct TFunction TriggersFunction PROGMEM =
-{
-	.Function=0,//Screen_ConfigBroker,
-};
-
-const struct TMenuEntry Menu_Main_Triggers PROGMEM =
-{
-	.Flags = MENU_ENTRY_FUNCTION|MENU_ENTRY_PROGMEM,
-	.Param =0,  //Interface_System_Config,
-	.Text = Menu_Main_Triggers_Text,
-};
-
-//
-
 void Sensors_Menu()
 {
 	Interface_Menu_P(&Menu_Sensors);
@@ -54,6 +38,31 @@ const struct TMenuEntry Menu_Main_Sensors PROGMEM =
 	.Flags = MENU_ENTRY_FUNCTION|MENU_ENTRY_PROGMEM,
 	.Param = (void*)&SensorsMenuFunction,  //Interface_Broker_Config,
 	.Text = Menu_Sensors_Text,
+};
+
+
+//
+
+void Screen_SystemName()
+{
+	char Name[16];
+	eeprom_read_block(Name, CfgSystemName, 16);
+	if(Interface_Keyboard_P(Name, 16, PSTR("Enter name")))
+		eeprom_update_block(Name, CfgSystemName, 16);
+}
+
+const char Menu_Main_System_Text[] PROGMEM = "System name";
+
+const struct TFunction SystemFunction PROGMEM =
+{
+	.Function=Screen_SystemName,
+};
+
+const struct TMenuEntry Menu_Main_System PROGMEM =
+{
+	.Flags = MENU_ENTRY_FUNCTION|MENU_ENTRY_PROGMEM,
+	.Param = (void*)&SystemFunction,  //Interface_Broker_Config,
+	.Text = Menu_Main_System_Text,
 };
 
 
@@ -107,22 +116,11 @@ const struct TMenuEntry Menu_Main_Backlight PROGMEM =
 
 //
 
-const char Menu_Main_Status_Text[] PROGMEM = "Status";
-
-const struct TMenuEntry Menu_Main_Status PROGMEM =
-{
-	.Flags = MENU_ENTRY_FUNCTION|MENU_ENTRY_PROGMEM,
-	.Param = 0,  //Interface_Status,
-	.Text = Menu_Main_Status_Text,
-};
-
-//
-
 const char Menu_Main_Title[] PROGMEM = "Settings";
 
 const struct TMenu Menu_Main PROGMEM =
 {
-	.NumEntries=6,
-	.Entries={&Menu_Main_Network, &Menu_Main_Triggers,  &Menu_Main_Sensors, &Menu_Main_Brightness, &Menu_Main_Backlight, &Menu_Main_Status},
+	.NumEntries=5,
+	.Entries={&Menu_Main_Network,  &Menu_Main_Sensors, &Menu_Main_System, &Menu_Main_Brightness, &Menu_Main_Backlight},
 	.Title=Menu_Main_Title,
 };
