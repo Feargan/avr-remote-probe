@@ -3,7 +3,7 @@
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 
-#include "memory/font.h"
+#include "font.h"
 #include <avr/eeprom.h>
 
 uint8_t DisplayBuffer[DRAM_WIDTH][DRAM_HEIGHT];

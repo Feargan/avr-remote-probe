@@ -1,7 +1,7 @@
 #include "interface.h"
 #include "buttons.h"
 #include "lcd.h"
-#include "memory/kblayout.h"
+#include "kblayout.h"
 #include "string.h"
 
 uint8_t Interface_Keyboard_P(char* Buffer, uint8_t Max, const char* Title)
