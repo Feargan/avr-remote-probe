@@ -148,10 +148,16 @@ static double ncr(double n, double r) {
 	return result;
 }
 static double npr(double n, double r) { return ncr(n, r) * fac(r); }
+	
+static double not(double expr)
+{
+	return expr == 0.0 ? 1.0 : 0.0;
+}
 
 static const te_variable functions[] = {
 	/* must be in alphabetical order */
 	{"log", log,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
+	{"not", not,      TE_FUNCTION1 | TE_FLAG_PURE, 0},
 /*	{"abs", fabs,     TE_FUNCTION1 | TE_FLAG_PURE, 0},
 	{"acos", acos,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
 	{"asin", asin,    TE_FUNCTION1 | TE_FLAG_PURE, 0},
@@ -228,8 +234,8 @@ static double divide(double a, double b) { return a / b; }
 static double gt(double a, double b) { return a > b ? 1.0 : 0.0; }
 static double lt(double a, double b) { return a < b ? 1.0 : 0.0; }
 static double eq(double a, double b) { return a == b ? 1.0 : 0.0; }
-static double geq(double a, double b) { return a >= b ? 1.0 : 0.0; }
-static double leq(double a, double b) { return a <= b ? 1.0 : 0.0; }
+//static double geq(double a, double b) { return a >= b ? 1.0 : 0.0; }
+//static double leq(double a, double b) { return a <= b ? 1.0 : 0.0; }
 static double and(double a, double b) { return a != 0.0 && b != 0.0; }
 static double or(double a, double b) { return a != 0.0 || b != 0.0; }
 static double negate(double a) { return -a; }
@@ -525,7 +531,7 @@ static te_expr *expr2(state *s) {
 	/* <expr>      =    <term> {("+" | "-") <term>} */
 	te_expr *ret = expr3(s);
 
-	while (s->type == TOK_INFIX && (s->function == eq || s->function == gt || s->function == gt)) {
+	while (s->type == TOK_INFIX && (s->function == eq || s->function == gt || s->function == lt)) {
 		te_fun2 t = s->function;
 		next_token(s);
 		ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, expr3(s));

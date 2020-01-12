@@ -32,16 +32,15 @@ void LCD_Clear()
 
 void LCD_Init()
 {
-    LCD_DDR |= (1 << LCD_SCE)|(1 << LCD_DC)|(1 << LCD_RESET)|(1 << LCD_MOSI)|(1 << LCD_CLOCK);
-    //LCD_PORT &= ~(1 << LCD_SCE);
-    LCD_PORT &= ~((1 << LCD_SCE)|(1 << LCD_DC)|(1 << LCD_RESET)|(1 << LCD_MOSI)|(1 << LCD_CLOCK));
+    LCD_DDR |= (1 << LCD_SCE)|(1 << LCD_DC)|(1 << LCD_RESET)|(1 << LCD_MOSI)|(1 << LCD_CLOCK); // set as outputs
+    LCD_PORT &= ~((1 << LCD_SCE)|(1 << LCD_DC)|(1 << LCD_RESET)|(1 << LCD_MOSI)|(1 << LCD_CLOCK)); // switch on or off
     LCD_PORT |= 1 << LCD_RESET;
-    _delay_ms(100);
+    _delay_ms(1); // give it some time to initialize
 
-    LCD_SendCommand(0x20 | 0x1); // function set + ext instructions
+    LCD_SendCommand(0x20 | 0x1); // extended instructions
     LCD_SendCommand(0x14); // bias
-    LCD_SendCommand(0xbf); // vop
-    LCD_SendCommand(0x20); // fs
+    LCD_SendCommand(0xbf); // operating voltage/contrast
+    LCD_SendCommand(0x20); // standard function set
     LCD_SendCommand(0xc); // display normal
     LCD_Clear();
 }
@@ -185,7 +184,7 @@ void LCD_SetBrightness(uint8_t Brightness)
 
 void LCD_SetupBacklight()
 {
-	LCD_BACKLIGHT_DDR |= (1 << LCD_BACKLIGHT);
+	LCD_BACKLIGHT_DDR |= (1 << LCD_BACKLIGHT); // set output
 	
 	// wrap into macros!! ---v
 	TCCR2A |= (1 << COM2B1) | (1 << WGM21) | (1 << WGM20); //LCD_BACKLIGHT_TCCRA
@@ -193,7 +192,7 @@ void LCD_SetupBacklight()
 	OCR2A = 100; // LCD_BACKLIGHT_OCR_CMP
 	//
 	
-	LCD_BACKLIGHT_OCR = MAX_BACKLIGHT_BRIGHTNESS; // eeprom_read_byte(ConfigBacklight);
+	LCD_BACKLIGHT_OCR = MAX_BACKLIGHT_BRIGHTNESS;
 }
 
 void LCD_SetBacklightBrightness(uint8_t Brightness)

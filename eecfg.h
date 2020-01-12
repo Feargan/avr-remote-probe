@@ -12,7 +12,7 @@
 uint8_t EEMEM CfgBrightness = MAX_BRIGHTNESS;
 uint8_t EEMEM  CfgBacklight  = 0;
 char EEMEM CfgSSID[64] = { "ASUS-4F94" };
-char EEMEM CfgPassword[64]  = { "KKKKKKKK" };
+char EEMEM CfgPassword[64]  = { "123abc321" };
 char EEMEM CfgBrokerAddr[64] = { "192.168.1.16" };
 char EEMEM CfgSystemName[16] = { "UPROBE" };
 uint16_t EEMEM CfgBrokerPort = 7750;
