@@ -10,33 +10,26 @@ uint8_t Head = 0;
 uint8_t Tail = 0;
 char UART_Buffer[UART_BUFFER_SIZE];
 bool OverflowFlag = false;
-uint16_t FrameTime;
+//uint16_t FrameTime;
 
 ISR(USART_RX_vect)
 {
 	UART_Buffer[Head] = UDR0;
 	Head = (Head + 1) % UART_BUFFER_SIZE;
-	if (Head == Tail) // or check at the beginning of ISR if it will overflow, if yes - return
+	if (Head == Tail)
 		OverflowFlag = true;
-	/*else if(Head > Tail && PreOverflowFlag)
-	{
-	OverflowFlag = true;
-	PreOverflowFlag = false;
-	}
-	else
-	PreOverflowFlag = false;*/
 }
 
 void UART_Init(const uint32_t Baudrate)
 {
-	const uint32_t Baudreg = ((F_CPU) / (Baudrate * 16UL) - 1);
+	const uint32_t Baudreg = ((F_CPU) / (Baudrate * 16UL) - 1); // calculate baudrate
 	cli();
 	UBRR0H |= Baudreg >> 8;
 	UBRR0L = Baudreg;
-	FrameTime = 1000000/Baudrate*10 + 1 + 50; // * BitsPerFrame + Round + FrameDelay
-	UCSR0B |= (1 << TXEN0) | (1 << RXEN0);
+	UCSR0B |= (1 << TXEN0) | (1 << RXEN0); // enable Tx, Rx
+	// no parity, 1 stop bit, 8 bit data section
 	UCSR0C |= (1 << UCSZ00) | (1 << UCSZ01);
-	UCSR0B |= (1 << RXCIE0);
+	UCSR0B |= (1 << RXCIE0); // enable receiver interrupts
 	sei();
 }
 

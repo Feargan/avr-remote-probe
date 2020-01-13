@@ -10,11 +10,6 @@
 #define BUTTON_OK_PORT PORTD
 #define BUTTON_OK_DDR DDRD
 
-/*#define BUTTON_RETURN PC5
-#define BUTTON_RETURN_PIN PINC
-#define BUTTON_RETURN_PORT PORTC
-#define BUTTON_RETURN_DDR DDRC*/
-
 #define BUTTON_RETURN PB0
 #define BUTTON_RETURN_PIN PINB
 #define BUTTON_RETURN_PORT PORTB
@@ -40,7 +35,7 @@
 #define BUTTON_LEFT_PORT PORTD
 #define BUTTON_LEFT_DDR DDRD
 
-#define DEBOUNCE_TIME 4
+#define DEBOUNCE_TIME 63
 
 void SetupButtons();
 void SuspendDebouncers();

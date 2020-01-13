@@ -4,17 +4,33 @@
 #include "kblayout.h"
 #include "string.h"
 
-uint8_t Interface_Keyboard_P(char* Buffer, uint8_t Max, const char* Title)
+int16_t Interface_Keyboard_P(char* Buffer, uint8_t Max, const char* Title)
 {
 	Max--;
+	const uint8_t MaxView = Max > 14 ? 14 : Max;
 	int8_t x = 0, y = 1;
 	uint8_t Shift = 0;
 	uint8_t Length = strlen(Buffer);
-	while(!Button_Return_Pressed())
+	uint8_t View = Length > 14 ? Length-14 : 0;
+	uint8_t Cursor = Length;
+	while(1)
 	{
 		LCD_Clear();
 		uint8_t i;
-		LCD_DrawText(0, 0, &Buffer[(Length > 14) ? Length-14 : 0]);
+		//LCD_DrawText(0, 0, &Buffer[(Length > 14) ? Length-14 : 0]);
+		for (int i = 0; i < (Length-View >= MaxView ? MaxView : Length-View); i++)
+		{
+			// LCD_DrawLetter()
+			char Restore = Buffer[i+View+1];
+			Buffer[i+View+1] = '\0';
+			LCD_DrawText(i*6, 0, &Buffer[i+View]);
+			Buffer[i+View+1] = Restore;
+			//
+			if (View + i == Cursor)
+				View != Cursor ? LCD_SetDramByte(i*6-1, 0, 0x7e) : LCD_SetDramByte(0, 0, 0x7e);
+		}
+		//if (Cursor == Length || View+MaxView == Cursor)
+		//	Cursor == View ? LCD_SetDramByte(0, 0, 0x7e) : LCD_SetDramByte((Cursor-View)*6-1, 0, 0x7e); //
 		LCD_DrawText_P(0, 1, Title);
 		for(i = 0; i<14; i++)
 		LCD_InvertCell(i, 1);
@@ -30,66 +46,106 @@ uint8_t Interface_Keyboard_P(char* Buffer, uint8_t Max, const char* Title)
 		if(Shift&SHIFTMODE_ON)
 			LCD_InvertCell(0, 4);
 		LCD_Render();
-
-		if(Button_Down_Pressed())
-			if(y < 3)
-				y++;
-		if(Button_Right_Pressed())
-			if(x < 13)
-				x++;
-		if(Button_Up_Pressed())
-			if(y > 0)
-				y--;
-		if(Button_Left_Pressed())
-			if(x > 0)
-				x--;
-		if(Button_OK_Pressed())
+		
+		while(1)
 		{
-			char Ch = pgm_read_byte(Shift ? &KbLayoutShift[y][x] : &KbLayout[y][x]);
-			if(Ch >= ' ' && Length < Max)
+			if(Button_Return_Pressed())
 			{
-				Buffer[Length] = Ch;
-				Buffer[Length+1] = '\0';
-				Length++;
-				if(Shift&SHIFTMODE_ONCE)
-					Shift = 0;
+				//Buffer[Length] = '\0';
+				return -1;
 			}
-			else
+			if(Button_Down_Pressed())
 			{
-				switch(Ch)
+				if(y < 3)
+					y++;
+				break;
+			}
+			if(Button_Right_Pressed())
+			{
+				if(x < 13)
+					x++;
+				break;
+			}
+			if(Button_Up_Pressed())
+			{
+				if(y > 0)
+					y--;
+				break;
+			}
+			if(Button_Left_Pressed())
+			{
+				if(x > 0)
+					x--;
+				break;
+			}
+			if(Button_OK_Pressed())
+			{
+				char Ch = pgm_read_byte(Shift ? &KbLayoutShift[y][x] : &KbLayout[y][x]);
+				if(Ch >= ' ' && Length < Max)
 				{
-					case 0x1:
-						if(Length > 0)
-						{
-							Length--;
-							Buffer[Length] = '\0';
-						}
-						break;
-					case 0x2:
-						if(!Shift)
-							Shift |= SHIFTMODE_ON;
-						else
-							Shift = 0;
-						break;
-					case 0x3:
-						if(!Shift)
-							Shift |= SHIFTMODE_ONCE;
-						else
-							Shift = 0;
-						break;
-					case 0x4:
-						return Length;
-						break;
-					case 0x5:
-						break;
-					case 0x6:
-						break;
+					if (Cursor != Length)
+					{
+						memmove(&Buffer[Cursor+1], &Buffer[Cursor], Length - Cursor);
+					}
+					Buffer[Cursor] = Ch;
+					Cursor++;
+					Length++;
+					if(Shift&SHIFTMODE_ONCE)
+						Shift = 0;
 				}
+				else
+				{
+					switch(Ch)
+					{
+						case 0x1:
+							if (Cursor > 0)
+							{
+								Length--;
+								Cursor--;
+								if (Cursor != Length)
+								{
+									memmove(&Buffer[Cursor], &Buffer[Cursor+1], Length - Cursor);
+								}
+								if (View > 0)
+									View--;
+							}
+							break;
+						case 0x2:
+							if(!Shift)
+								Shift |= SHIFTMODE_ON;
+							else
+								Shift = 0;
+							break;
+						case 0x3:
+							if(!Shift)
+								Shift |= SHIFTMODE_ONCE;
+							else
+								Shift = 0;
+							break;
+						case 0x4:
+							Buffer[Length] = '\0';
+							return Length;
+							break;
+						case 0x5:
+							if (Cursor > 0)
+								Cursor--;
+							break;
+						case 0x6:
+							if (Cursor < Length)
+								Cursor++;
+							break;
+					}
+				}
+				break;
 			}
 		}
+		if (Cursor > View+MaxView)
+			View++;
+		if (Cursor < View)
+			View--;
 	}
-	Buffer[0] = '\0';
-	return 0;
+	//Buffer[Length] = '\0';
+	return -1;
 }
 
 inline static const TMenuEntry* getMenuEntry(const TMenu* Menu, uint8_t i)
@@ -152,10 +208,10 @@ void Interface_Scrollbar_P(const char* Name, uint8_t* Value, uint8_t Bottom, uin
 	int8_t Prev = *Value;
 	while(1)
 	{
-		if(*Value > Top)
+		/*(if(*Value > Top)
 			*Value = Top;
 		if(*Value < Bottom)
-			*Value = Bottom;
+			*Value = Bottom;*/
 		
 		LCD_Clear();
 		LCD_DrawText_P(6, 1, Name);
@@ -180,12 +236,18 @@ void Interface_Scrollbar_P(const char* Name, uint8_t* Value, uint8_t Bottom, uin
 			return;
 		if(Button_Left_Pressed())
 		{
-			*Value-=Step;
+			if(*Value >= Step && *Value-Step >= Bottom)
+				*Value-=Step;
+			else
+				*Value=Bottom;
 			update(*Value);
 		}
 		if(Button_Right_Pressed())
 		{
-			*Value+=Step;
+			if(*Value+Step <= Top)
+				*Value+=Step;
+			else
+				*Value=Top;
 			update(*Value);
 		}
 	}

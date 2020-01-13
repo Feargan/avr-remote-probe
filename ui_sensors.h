@@ -47,7 +47,7 @@ void Screen_IOName()
 {
 	char Name[8];
 	eeprom_read_block(Name, &CfgSensorNames[SelectedSensorOpt][0], 8);
-	if(Interface_Keyboard_P(Name, 8, PSTR("Enter name")))
+	if(Interface_Keyboard_P(Name, 8, PSTR("Enter name")) != -1)
 		eeprom_update_block(Name, &CfgSensorNames[SelectedSensorOpt][0], 8);
 }
 
@@ -73,7 +73,7 @@ void Screen_IOExpression()
 {
 	char Expression[64];
 	eeprom_read_block(Expression, &CfgExprs[SelectedSensorOpt][0], 64);
-	if(Interface_Keyboard_P(Expression, 64, PSTR("Expression")))
+	if(Interface_Keyboard_P(Expression, 64, PSTR("Expression")) != -1)
 		eeprom_update_block(Expression, &CfgExprs[SelectedSensorOpt][0], 64);
 }
 

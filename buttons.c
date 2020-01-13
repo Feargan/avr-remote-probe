@@ -6,7 +6,7 @@
 
 typedef struct
 {
-    uint8_t Cycles:3;
+    uint8_t Cycles:6;
     uint8_t PrevState:1;
     uint8_t NewState:1;
 } BtnDebouncer;
@@ -31,7 +31,7 @@ ISR(TIMER0_OVF_vect)
     if(Button_OK_State() != DbOK.PrevState)
     {
         DbOK.Cycles++;
-        if(DbOK.Cycles >= 4)
+        if(DbOK.Cycles >= DEBOUNCE_TIME)
         {
             DbOK.Cycles = 0;
             DbOK.NewState = 1;
@@ -43,7 +43,7 @@ ISR(TIMER0_OVF_vect)
     if(Button_Return_State() != DbReturn.PrevState)
     {
         DbReturn.Cycles++;
-        if(DbReturn.Cycles >= 4)
+        if(DbReturn.Cycles >= DEBOUNCE_TIME)
         {
             DbReturn.Cycles = 0;
             DbReturn.NewState = 1;
@@ -55,7 +55,7 @@ ISR(TIMER0_OVF_vect)
     if(Button_Right_State() != DbRight.PrevState)
     {
         DbRight.Cycles++;
-        if(DbRight.Cycles >= 4)
+        if(DbRight.Cycles >= DEBOUNCE_TIME)
         {
             DbRight.Cycles = 0;
             DbRight.NewState = 1;
@@ -67,7 +67,7 @@ ISR(TIMER0_OVF_vect)
     if(Button_Down_State() != DbDown.PrevState)
     {
         DbDown.Cycles++;
-        if(DbDown.Cycles >= 4)
+        if(DbDown.Cycles >= DEBOUNCE_TIME)
         {
             DbDown.Cycles = 0;
             DbDown.NewState = 1;
@@ -79,7 +79,7 @@ ISR(TIMER0_OVF_vect)
     if(Button_Up_State() != DbUp.PrevState)
     {
         DbUp.Cycles++;
-        if(DbUp.Cycles >= 4)
+        if(DbUp.Cycles >= DEBOUNCE_TIME)
         {
             DbUp.Cycles = 0;
             DbUp.NewState = 1;
@@ -91,7 +91,7 @@ ISR(TIMER0_OVF_vect)
     if(Button_Left_State() != DbLeft.PrevState)
     {
         DbLeft.Cycles++;
-        if(DbLeft.Cycles >= 4)
+        if(DbLeft.Cycles >= DEBOUNCE_TIME)
         {
             DbLeft.Cycles = 0;
             DbLeft.NewState = 1;

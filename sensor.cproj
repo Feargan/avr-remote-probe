@@ -154,9 +154,6 @@
     <Compile Include="eecfg.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="expr.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="font.h">
       <SubType>compile</SubType>
     </Compile>

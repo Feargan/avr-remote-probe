@@ -47,7 +47,7 @@ void Screen_SystemName()
 {
 	char Name[16];
 	eeprom_read_block(Name, CfgSystemName, 16);
-	if(Interface_Keyboard_P(Name, 16, PSTR("Enter name")))
+	if(Interface_Keyboard_P(Name, 16, PSTR("Enter name")) != -1)
 		eeprom_update_block(Name, CfgSystemName, 16);
 }
 

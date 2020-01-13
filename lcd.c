@@ -103,7 +103,7 @@ void LCD_DrawText_P(int PosX, int PosY, const char* Text)
             if(PosY >= DRAM_HEIGHT)
                 return;
 
-            if(Chr >= 0x01 && Chr <= 0x05)
+            if(Chr >= 0x01 && Chr <= 0x06)
                 DisplayBuffer[PosX][PosY] = pgm_read_byte(&FontEx[Chr*6+i]);
             else if(Chr <= '~')
             {
@@ -185,14 +185,12 @@ void LCD_SetBrightness(uint8_t Brightness)
 void LCD_SetupBacklight()
 {
 	LCD_BACKLIGHT_DDR |= (1 << LCD_BACKLIGHT); // set output
-	
-	// wrap into macros!! ---v
-	TCCR2A |= (1 << COM2B1) | (1 << WGM21) | (1 << WGM20); //LCD_BACKLIGHT_TCCRA
-	TCCR2B |= (1 << WGM22) | (1 << WGM13) | (1 << CS22) | (1 << CS20); //LCD_BACKLIGHT_TCCRB
-	OCR2A = 100; // LCD_BACKLIGHT_OCR_CMP
-	//
-	
-	LCD_BACKLIGHT_OCR = MAX_BACKLIGHT_BRIGHTNESS;
+	// Clear OCR on compare match, set OCR at BOTTOM,(non-inverting mode)
+	// Fast-PWM, OCRA is TOP value
+	LCD_BACKLIGHT_TCCRA |= (1 << COM2B1) | (1 << WGM21) | (1 << WGM20); 
+	LCD_BACKLIGHT_TCCRB |= (1 << WGM22) | (1 << WGM13) | (1 << CS22) | (1 << CS20); 
+	LCD_BACKLIGHT_OCRA = 100; // timer top
+	LCD_BACKLIGHT_OCRB = MAX_BACKLIGHT_BRIGHTNESS; // set cmp
 }
 
 void LCD_SetBacklightBrightness(uint8_t Brightness)
@@ -201,5 +199,5 @@ void LCD_SetBacklightBrightness(uint8_t Brightness)
 		Brightness = MAX_BACKLIGHT_BRIGHTNESS;
 	if(Brightness < MIN_BACKLIGHT_BRIGHTNESS)
 		Brightness = MIN_BACKLIGHT_BRIGHTNESS;
-	LCD_BACKLIGHT_OCR = 100-Brightness;
+	LCD_BACKLIGHT_OCRB = 100-Brightness; // change cmp
 }

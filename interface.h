@@ -41,7 +41,7 @@ typedef struct TMenu
 } TMenu;
 
 void Interface_Menu_P(const TMenu* Menu);
-uint8_t Interface_Keyboard_P(char* Buffer, uint8_t Max, const char* Title);
+int16_t Interface_Keyboard_P(char* Buffer, uint8_t Max, const char* Title);
 void Interface_Scrollbar_P(const char* Name, uint8_t* Value, uint8_t Bottom, uint8_t Top, uint8_t Step, void (*update)(uint8_t));
 void Interface_Switch_P(const char* Switches, uint8_t* Selection, const char* Title);
 

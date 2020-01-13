@@ -66,7 +66,7 @@ void Screen_SelectAP()
 					char Password[64] = "\0";
 					if(WLAN_AccessPoints[Selection].Encryption)
 					{
-						if(!Interface_Keyboard_P(Password, 64, PSTR("Enter password")))
+						if(Interface_Keyboard_P(Password, 64, PSTR("Enter password")) == -1)
 							break;
 					}
 
@@ -101,7 +101,7 @@ void Screen_ManualSSID()
 {
 	char SSID[32];
 	eeprom_read_block(SSID, CfgSSID, 32);
-	if(Interface_Keyboard_P(SSID, 32, PSTR("Enter SSID")))
+	if(Interface_Keyboard_P(SSID, 32, PSTR("Enter SSID")) != -1)
 		eeprom_update_block(SSID, CfgSSID, 32);
 }
 
@@ -127,7 +127,7 @@ void Screen_Password()
 {
 	char Password[64];
 	eeprom_read_block(Password, CfgPassword, 64);
-	if(Interface_Keyboard_P(Password, 64, PSTR("Enter password")))
+	if(Interface_Keyboard_P(Password, 64, PSTR("Enter password")) != -1)
 		eeprom_update_block(Password, CfgPassword, 64);
 }
 
@@ -153,7 +153,7 @@ void Screen_Broker()
 {
 	char Address[64];
 	eeprom_read_block(Address, CfgBrokerAddr, 64);
-	if(Interface_Keyboard_P(Address, 64, PSTR("Enter address")))
+	if(Interface_Keyboard_P(Address, 64, PSTR("Enter address")) != -1)
 	{
 		char* Token = strtok_P(Address, PSTR(":"));
 		eeprom_update_block(Token, CfgBrokerAddr, 64);

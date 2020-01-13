@@ -11,7 +11,7 @@
 #include "wlan.h"
 #include "ui_main_menu.h"
 #include "buttons.h"
-//#include "expr.h"
+#include "str_util.h"
 #include "math.h"
 #include "tinyexpr.h"
 #include <string.h>
@@ -20,15 +20,6 @@ volatile uint8_t BrokerFlags = 0;
 
 #define BROKER_FLAG_REGISTER_OK 0x1
 #define BROKER_FLAG_QUERIED 0x2
-
-/*static float f_log(struct expr_func *f, vec_expr_t *args, void *c) {
-	return log(expr_eval(&vec_nth(args, 0)));
-}
-
-static struct expr_func user_funcs[] = {
-	{"log", f_log, NULL, 0},
-	{NULL, NULL, NULL, 0},
-};*/
 
 void recv(uint8_t Length, char* Buffer)
 {
@@ -64,7 +55,7 @@ void Broker_Connect()
 			break;
 		case WLAN_OK:
 		{
-			LCD_DrawText_P(0, 1, PSTR("chip ready")); // disassemble this into smaller functions for readability
+			LCD_DrawText_P(0, 1, PSTR("chip ready"));
 			LCD_Render();
 			_delay_ms(500);
 			if(!(eeprom_read_byte(&CfgSwitches)>>CFG_NETWORK_ENABLED)&1)
@@ -112,39 +103,6 @@ void Broker_Connect()
 #define TRIGGER_DDR DDRC
 #define TRIGGER_PORT PORTC
 
-void str_replace(char *target, const char *needle, const char *replacement)
-{
-	char buffer[128] = { 0 };
-	char *insert_point = &buffer[0];
-	const char *tmp = target;
-	size_t needle_len = strlen(needle);
-	size_t repl_len = strlen(replacement);
-
-	while (1) {
-		const char *p = strstr(tmp, needle);
-
-		// walked past last occurrence of needle; copy remaining part
-		if (p == NULL) {
-			strcpy(insert_point, tmp);
-			break;
-		}
-
-		// copy part before needle
-		memcpy(insert_point, tmp, p - tmp);
-		insert_point += p - tmp;
-
-		// copy replacement string
-		memcpy(insert_point, replacement, repl_len);
-		insert_point += repl_len;
-
-		// adjust pointers, move on
-		tmp = p + needle_len;
-	}
-
-	// write altered string back to target
-	strcpy(target, buffer);
-}
-
 int main(void)
 {
 	TRIGGER_DDR |= (1 << TRIGGER1_PIN);
@@ -160,7 +118,7 @@ int main(void)
 	LCD_SetBacklightBrightness(eeprom_read_byte(&CfgBacklight));
 	ADC_Init();
 	
-	LCD_DrawText_P(0, 2, PSTR("Termometr"));
+	LCD_DrawText_P(24, 3, PSTR("uProbe"));
 	LCD_Render();
 	_delay_ms(2000);
 
@@ -192,7 +150,7 @@ int main(void)
 		}	
 		if(!Error && WLAN_Listen(recv) == WLAN_ERROR_UART_TIMEOUT)
 			Error = 1;
-		float Values[4] = { ADC_LinearV2U(ADC_Oversample(0, 3), 8196, vRef, 1.f, 0.f), ADC_LinearV2U(ADC_Oversample(0, 3), 8196, vRef, 1.f, 0.f),
+		float Values[4] = { ADC_LinearV2U(ADC_Oversample(0, 3), 8196, vRef, 1.f, 0.f), ADC_LinearV2U(ADC_Oversample(1, 3), 8196, vRef, 1.f, 0.f),
 							(TRIGGER_PORT>>TRIGGER1_PIN)&1 ? 1.f : 0.f,  (TRIGGER_PORT>>TRIGGER2_PIN)&1 ? 1.f : 0.f };
 		{
 			
@@ -200,15 +158,7 @@ int main(void)
 			{
 				if(((eeprom_read_byte(&CfgSwitches)>>i)&1) == 0)
 					continue;
-				//char ExprBuffer[128] = { 0 };
-				//char FloatBuffer[16] = { 0 };
-				
-				//dtostrf(Values[i], 0, 1, fBuffer);
-				//sprintf(fBuffer, "%f", 3.3);
-				
-				/*struct expr *Expression;
-				struct expr_var_list vars = { 0 };
-				char ExprBuffer[64] = { 0 };*/
+
 				eeprom_read_block(Buffer, &CfgExprs[i][0], 64);
 				
 				str_replace(Buffer, "r", "3.3");
@@ -224,13 +174,9 @@ int main(void)
 
 				dtostrf(Values[3], 0, 4, fBuffer);
 				str_replace(Buffer, "t2", fBuffer);
-				//Buffer[0] = 0;
-				//sprintf_P(Buffer, PSTR("r=3.3, s1=%.3f, s2=%.3f, t1=%.3f, t2=%.3f, %s"), Values[0], Values[1], Values[2], Values[3], ExprBuffer);
-				//Expression = NULL;//expr_create(Buffer, strlen(Buffer), &vars, user_funcs);
-				//if(!Expression)
-				//	continue;
+
 				int Error = 0;
-				Values[i] = te_interp(Buffer, &Error);//expr_eval(Expression);
+				Values[i] = te_interp(Buffer, &Error);
 				Buffer[0] = 0;
 				char NameBuffer[8];
 				eeprom_read_block(NameBuffer, &CfgSensorNames[i][0], 8);
@@ -246,52 +192,16 @@ int main(void)
 				LCD_DrawText(0, i, Buffer);
 				if(BrokerFlags&BROKER_FLAG_QUERIED)
 				{
-					sprintf_P(Buffer, PSTR("DATA %s %s\n"), NameBuffer, fBuffer); // CRLF!!
+					sprintf_P(Buffer, PSTR("DATA %s %s\n"), NameBuffer, fBuffer);
 					if(WLAN_TcpSend(Buffer) != WLAN_OK)
 						Error = 1;
 				}
-				//printf("\neval: %f\n", Values[i]);
-				/*struct expr_var* var = vars.head;
-				for (int i = 0; i < 5; i++)
-				{
-					printf("%s: %f\n", var->name, var->value);
-					var = var->next;
-				}*/
-				//expr_destroy(Expression, &vars);
 			}
 		}
 		LCD_DrawText_P(0, 4, PSTR("AP:"));
 		LCD_DrawText_P(18, 4, WLAN_GetState()&(1<<WLAN_AP_CONNECTED) ? PSTR("OK") : PSTR("X"));
 		LCD_DrawText_P(40, 4, PSTR("BR:"));
 		LCD_DrawText_P(58, 4, WLAN_GetState()&(1<<WLAN_TCP_CONNECTED) ? PSTR("OK") : PSTR("X"));
-		
-		
-		/*float Sensors[2];
-		dtostrf(ADC_LinearV2U(ADC_Oversample(0, 3), 8196, vRef, 0.01f, 0.5f), 0, 1, fBuffer); // move such blocks into a function
-		sprintf_P(Buffer, PSTR("%s st. C"), fBuffer);
-		LCD_DrawText(0, 0, Buffer);
-		if(BrokerFlags&BROKER_FLAG_QUERIED)
-		{
-			sprintf_P(Buffer, PSTR("DATA temp %s\r\n"), fBuffer); // add CRLF!!
-			if(WLAN_TcpSend(Buffer) != WLAN_OK)
-				Error = 1;
-		}
-		
-		uint16_t hVoltage = ADC_Oversample(1, 3);
-		dtostrf(ADC_LinearV2U(hVoltage, 8196, vRef, 1.f, 0.f), 0, 2, fBuffer);
-		sprintf_P(Buffer, PSTR("%s V"), fBuffer);
-		LCD_DrawText(0, 1, Buffer);
-		if(BrokerFlags&BROKER_FLAG_QUERIED)
-		{
-			sprintf_P(Buffer, PSTR("DATA hvolt %s\r\n"), fBuffer); // CRLF!!
-			if(WLAN_TcpSend(Buffer) != WLAN_OK)
-				Error = 1;
-		}
-		
-		dtostrf(ADC_LinearV2U(hVoltage, 8196, vRef, 1.f, 0.f)-vRef/2, 0, 3, fBuffer);
-		sprintf_P(Buffer, PSTR("%s V err"), fBuffer);
-		LCD_DrawText(0, 2, Buffer);*/
-		
 
 		BrokerFlags &= ~(BROKER_FLAG_QUERIED);
 		
