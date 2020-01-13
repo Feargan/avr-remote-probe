@@ -1,6 +1,7 @@
+*.o
 Debug/
 Release/
-*.o
+elektro/
 *.d
 *.mk
 Makefile
