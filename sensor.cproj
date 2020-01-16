@@ -178,6 +178,9 @@
     <Compile Include="sprites.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="str_util.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="tinyexpr.c">
       <SubType>compile</SubType>
     </Compile>
