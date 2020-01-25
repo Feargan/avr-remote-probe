@@ -8,8 +8,8 @@ void str_replace(char *Str, const char *Search, const char *Replace)
 	char* p, *temp=Str;
 	uint8_t ReplaceSize = strlen(Replace);
 	uint8_t StrSize = strlen(Str);
-	uint8_t SearchSize = strlen(Search);
-	while ((p = strstr(temp, Search)))
+	uint8_t SearchSize = strlen_P(Search);
+	while ((p = strstr_P(temp, Search)))
 	{
 		memmove(p + ReplaceSize, p+SearchSize, StrSize-(p-Str)-SearchSize+1);
 		memcpy(p, Replace, ReplaceSize);

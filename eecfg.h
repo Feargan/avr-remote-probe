@@ -18,6 +18,7 @@ char EEMEM CfgSystemName[16] = { "UPROBE" };
 uint16_t EEMEM CfgBrokerPort = 7750;
 char EEMEM CfgSensorNames[4][8] = { "SENSOR1", "SENSOR2", "TRIG1", "TRIG2" };
 char EEMEM CfgExprs[4][64] = { {0}, {0}, {0}, {0} };
+uint8_t EEMEM CfgPrecisions[4] = {2, 2, 2, 2};
 	
 #define CFG_INPUT1_ENABLED 0
 #define CFG_INPUT2_ENABLED 1

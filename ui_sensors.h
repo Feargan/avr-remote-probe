@@ -95,10 +95,71 @@ const struct TMenuEntry Menu_Sensor_IOExpression PROGMEM =
 
 */
 
+const char Menu_Sensor_IOPrecision_Text[] PROGMEM = "Precision";
+
+void Screen_IOPrecision()
+{
+	if(SelectedSensorOpt >= 2)
+	{
+		LCD_Clear();
+		LCD_DrawText_P(0, 2, PSTR("Not supported"));
+		LCD_Render();
+		_delay_ms(1000);
+		return;
+	}
+	uint8_t Sel = eeprom_read_byte(&CfgPrecisions[SelectedSensorOpt]);
+	Interface_Switch_P(PSTR("0\r1\r2\r3"), &Sel, Menu_Sensor_IOPrecision_Text);
+	eeprom_update_byte(&CfgPrecisions[SelectedSensorOpt], Sel);
+}
+
+const struct TFunction IOPrecisionFunction PROGMEM =
+{
+	.Function=Screen_IOPrecision,
+};
+
+const struct TMenuEntry Menu_Sensor_IOPrecision PROGMEM =
+{
+	.Flags = MENU_ENTRY_FUNCTION|MENU_ENTRY_PROGMEM,
+	.Param = (void*)&IOPrecisionFunction,
+	.Text = Menu_Sensor_IOPrecision_Text,
+};
+
+/*
+
+*/
+
+#include "ui_quick_setup.h"
+
+
+
+void Screen_IOQuickSetup()
+{
+	if(SelectedSensorOpt <= 1)
+		Interface_Menu_P(&Menu_QuickSetupInput);
+	else
+		Interface_Menu_P(&Menu_QuickSetupOutput);
+}
+
+const struct TFunction IOQuickSetupFunction PROGMEM =
+{
+	.Function=Screen_IOQuickSetup,
+};
+
+const struct TMenuEntry Menu_Sensor_IOQuickSetup PROGMEM =
+{
+	.Flags = MENU_ENTRY_FUNCTION|MENU_ENTRY_PROGMEM,
+	.Param = (void*)&IOQuickSetupFunction,
+	.Text = Menu_Sensor_IOQuickSetup_Text,
+};
+
+/*
+
+*/
+
 const struct TMenu Menu_SensorConfig PROGMEM =
 {
-	.NumEntries=3,
-	.Entries={&Menu_Sensor_IOSwitch, &Menu_Sensor_IOName, &Menu_Sensor_IOExpression},
+	.NumEntries=5,
+	.Entries={&Menu_Sensor_IOSwitch, &Menu_Sensor_IOName, &Menu_Sensor_IOExpression, &Menu_Sensor_IOPrecision, &Menu_Sensor_IOQuickSetup},
 	.Title=Menu_Sensors_Text,
 };
 
