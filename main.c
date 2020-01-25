@@ -161,26 +161,26 @@ int main(void)
 
 				eeprom_read_block(Buffer, &CfgExprs[i][0], 64);
 				
-				str_replace(Buffer, "r", "3.3");
+				str_replace(Buffer, PSTR("r"), "3.3");
 				
 				dtostrf(Values[0], 0, 4, fBuffer);
-				str_replace(Buffer, "s1", fBuffer);
+				str_replace(Buffer, PSTR("s1"), fBuffer);
 
 				dtostrf(Values[1], 0, 4, fBuffer);
-				str_replace(Buffer, "s2", fBuffer);
+				str_replace(Buffer, PSTR("s2"), fBuffer);
 
 				dtostrf(Values[2], 0, 4, fBuffer);
-				str_replace(Buffer, "t1", fBuffer);
+				str_replace(Buffer, PSTR("t1"), fBuffer);
 
 				dtostrf(Values[3], 0, 4, fBuffer);
-				str_replace(Buffer, "t2", fBuffer);
+				str_replace(Buffer, PSTR("t2"), fBuffer);
 
 				int Error = 0;
 				Values[i] = te_interp(Buffer, &Error);
 				Buffer[0] = 0;
 				char NameBuffer[8];
 				eeprom_read_block(NameBuffer, &CfgSensorNames[i][0], 8);
-				dtostrf(Values[i], 0, i < 2 ? 3 : 0, fBuffer);
+				dtostrf(Values[i], 0, i < 2 ? eeprom_read_byte(&CfgPrecisions[i]) : 0, fBuffer);
 				if(i < 2) // inputs
 					sprintf_P(Buffer, PSTR("%s=%s"), NameBuffer, Error ? "err" : fBuffer);
 				else // outputs
@@ -207,21 +207,27 @@ int main(void)
 		
 		LCD_Render();
 		
-		if(Button_OK_Pressed())
+		uint16_t Delay = 1000;
+		while(Delay)
 		{
-			LCD_Clear();
-			LCD_DrawText_P(0, 2, PSTR("Please wait..."));
-			LCD_Render();
-			if(WLAN_GetState()&(1<<WLAN_AP_CONNECTED))
+			if(Button_OK_Pressed())
 			{
-				WLAN_TcpDisconnect();
-				WLAN_Disconnect();
+				LCD_Clear();
+				LCD_DrawText_P(0, 2, PSTR("Please wait..."));
+				LCD_Render();
+				if(WLAN_GetState()&(1<<WLAN_AP_CONNECTED))
+				{
+					WLAN_TcpDisconnect();
+					WLAN_Disconnect();
+				}
+				Interface_Menu_P(&Menu_Main);
+				if(eeprom_read_byte(&CfgSwitches)&(1 << CFG_NETWORK_ENABLED))
+					Broker_Connect();
+				break;
 			}
-			Interface_Menu_P(&Menu_Main);
-			if(eeprom_read_byte(&CfgSwitches)&(1 << CFG_NETWORK_ENABLED))
-				Broker_Connect();
+			_delay_ms(1);
+			Delay--;
 		}
-		_delay_ms(200);
     }
 }
 
