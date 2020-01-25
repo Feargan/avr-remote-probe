@@ -199,6 +199,9 @@
     <Compile Include="ui_main_menu.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="ui_quick_setup.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="ui_sensors.h">
       <SubType>compile</SubType>
     </Compile>
